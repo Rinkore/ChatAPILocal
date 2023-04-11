@@ -43,7 +43,24 @@ class ChatGUI:
             button.grid(row=0, column=i + 1, padx=5)
 
         self.selected_model.set("gpt-3.5-turbo")
+        # Create slider for temperature value
+        self.temperature_label = tk.Label(self.model_selection_frame, text="Temperature:")
+        self.temperature_label.grid(row=1, column=0, padx=5)
 
+        self.temperature_slider = tk.Scale(self.model_selection_frame, from_=0.1, to=2.0, resolution=0.1,
+                                           orient=tk.HORIZONTAL,
+                                           length=200)
+        self.temperature_slider.grid(row=1, column=1, padx=5)
+        self.temperature_slider.set('0.2')
+        # Create slider for max token value
+        self.max_token_label = tk.Label(self.model_selection_frame, text="Max Token:")
+        self.max_token_label.grid(row=2, column=0, padx=5)
+
+        self.max_token_slider = tk.Scale(self.model_selection_frame, from_=10, to=2000, resolution=10,
+                                         orient=tk.HORIZONTAL,
+                                         length=200)
+        self.max_token_slider.grid(row=2, column=1, padx=5)
+        self.max_token_slider.set('1000')
         # Create task input box
         self.input_task_frame = tk.Frame(master)
         self.input_task_frame.grid(row=2, column=0, padx=10, pady=10)
@@ -111,10 +128,10 @@ class ChatGUI:
                     self.chatlog.insert(tk.END, "{}".format(line.choices[0].delta.content))
                     self.chatlog.configure(state=tk.DISABLED)
                 else:
-                    if line.choices[0].finish_reason == "stop":
-                        self.chatlog.configure(state=tk.NORMAL)
-                        self.chatlog.insert(tk.END, "\n[结束]\n")
-                        self.chatlog.configure(state=tk.DISABLED)
+                    self.chatlog.configure(state=tk.NORMAL)
+                    self.chatlog.insert(tk.END, "\n[非文本响应]\n")
+                    self.chatlog.configure(state=tk.DISABLED)
+                    print(line)
 
                 line = next(response, '[DONE]')
 
