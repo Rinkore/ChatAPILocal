@@ -7,6 +7,12 @@ from pyperclip import copy
 
 
 class ChatGUI:
+
+    def update_chatlog(self, content):
+        self.chatlog.configure(state=tk.NORMAL)
+        self.chatlog.insert(tk.END, content)
+        self.chatlog.configure(state=tk.DISABLED)
+
     def __init__(self, master):
         self.master = master
         master.title("Chat with OpenAI")
@@ -20,7 +26,7 @@ class ChatGUI:
 
         self.api_key_box = tk.Entry(self.api_key_frame, width=50)
         self.api_key_box.grid(row=0, column=1, padx=5)
-        self.api_key_box.insert(tk.END, "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")
+        self.api_key_box.insert(tk.END, "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")
 
         # Create model selection frame
         self.model_selection_frame = tk.Frame(master)
@@ -56,11 +62,11 @@ class ChatGUI:
         self.max_token_label = tk.Label(self.model_selection_frame, text="Max Token:")
         self.max_token_label.grid(row=2, column=0, padx=5)
 
-        self.max_token_slider = tk.Scale(self.model_selection_frame, from_=10, to=2000, resolution=10,
+        self.max_token_slider = tk.Scale(self.model_selection_frame, from_=32, to=2048, resolution=32,
                                          orient=tk.HORIZONTAL,
                                          length=200)
         self.max_token_slider.grid(row=2, column=1, padx=5)
-        self.max_token_slider.set('1000')
+        self.max_token_slider.set('1024')
         # Create task input box
         self.input_task_frame = tk.Frame(master)
         self.input_task_frame.grid(row=2, column=0, padx=10, pady=10)
@@ -89,9 +95,7 @@ class ChatGUI:
         self.chatlog = tk.Text(master, state=tk.DISABLED)
         self.chatlog.grid(row=4, column=0, padx=10, pady=10, sticky="nsew")
 
-        self.chatlog.configure(state=tk.NORMAL)
-        self.chatlog.insert(tk.END, "Chat with OpenAI")
-        self.chatlog.configure(state=tk.DISABLED)
+        self.update_chatlog("Chat with OpenAI")
 
     def send_message(self):
         # Get API key and set it
@@ -102,10 +106,7 @@ class ChatGUI:
         prompt = self.input_task_box.get()
         self.input_box.delete(0, tk.END)
 
-        self.chatlog.configure(state=tk.NORMAL)
-        self.chatlog.insert(tk.END, "\nYou: {}".format(prompt + message))
-        self.chatlog.insert(tk.END, "\nChatGPT: ")
-        self.chatlog.configure(state=tk.DISABLED)
+        self.update_chatlog("\nYou:" + prompt + message + "\nChatGPT: ")
 
         try:
             def get_response():
@@ -113,10 +114,10 @@ class ChatGUI:
                     messages=[
                         {'role': 'user', 'content': prompt + message}
                     ],
-                    max_tokens=1024,
+                    max_tokens=self.max_token_slider.get(),
                     n=1,
                     stop=None,
-                    temperature=0.2,
+                    temperature=self.temperature_slider.get(),
                     model=self.selected_model.get(),
                     stream=True
                 )
@@ -125,13 +126,13 @@ class ChatGUI:
                 while line != '[DONE]':
                     if 'content' in line.choices[0].delta:  # 处理返回的数据
                         chatGPT_response += line.choices[0].delta.content
-                        self.chatlog.configure(state=tk.NORMAL)
-                        self.chatlog.insert(tk.END, "{}".format(line.choices[0].delta.content))
-                        self.chatlog.configure(state=tk.DISABLED)
+                        self.update_chatlog(line.choices[0].delta.content)
+                    elif line.choices[0].finish_reason == "stop":
+                        self.update_chatlog("\n[结束]\n")
+                    elif 'role' in line.choices[0].delta:
+                        self.update_chatlog("\n[开始]\n")
                     else:
-                        self.chatlog.configure(state=tk.NORMAL)
-                        self.chatlog.insert(tk.END, "\n[非文本响应]\n")
-                        self.chatlog.configure(state=tk.DISABLED)
+                        self.update_chatlog("\n[非文本响应]\n")
                         print(line)
 
                     line = next(response, '[DONE]')
@@ -143,10 +144,7 @@ class ChatGUI:
             threading.Thread(target=get_response).start()
         except Exception as e:
             print(e)
-            self.chatlog.configure(state=tk.NORMAL)
-            self.chatlog.insert(tk.END, "\n{}\n".format(e))
-            self.chatlog.configure(state=tk.DISABLED)
-
+            self.update_chatlog("\n" + str(e) + "\n")
 
 
 root = tk.Tk()
