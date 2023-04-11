@@ -107,39 +107,46 @@ class ChatGUI:
         self.chatlog.insert(tk.END, "\nChatGPT: ")
         self.chatlog.configure(state=tk.DISABLED)
 
-        def get_response():
-            response = openai.ChatCompletion.create(
-                messages=[
-                    {'role': 'user', 'content': prompt + message}
-                ],
-                max_tokens=1024,
-                n=1,
-                stop=None,
-                temperature=0.2,
-                model=self.selected_model.get(),
-                stream=True
-            )
-            chatGPT_response = ""
-            line = next(response, '[DONE]')
-            while line != '[DONE]':
-                if 'content' in line.choices[0].delta:  # 处理返回的数据
-                    chatGPT_response += line.choices[0].delta.content
-                    self.chatlog.configure(state=tk.NORMAL)
-                    self.chatlog.insert(tk.END, "{}".format(line.choices[0].delta.content))
-                    self.chatlog.configure(state=tk.DISABLED)
-                else:
-                    self.chatlog.configure(state=tk.NORMAL)
-                    self.chatlog.insert(tk.END, "\n[非文本响应]\n")
-                    self.chatlog.configure(state=tk.DISABLED)
-                    print(line)
-
+        try:
+            def get_response():
+                response = openai.ChatCompletion.create(
+                    messages=[
+                        {'role': 'user', 'content': prompt + message}
+                    ],
+                    max_tokens=1024,
+                    n=1,
+                    stop=None,
+                    temperature=0.2,
+                    model=self.selected_model.get(),
+                    stream=True
+                )
+                chatGPT_response = ""
                 line = next(response, '[DONE]')
+                while line != '[DONE]':
+                    if 'content' in line.choices[0].delta:  # 处理返回的数据
+                        chatGPT_response += line.choices[0].delta.content
+                        self.chatlog.configure(state=tk.NORMAL)
+                        self.chatlog.insert(tk.END, "{}".format(line.choices[0].delta.content))
+                        self.chatlog.configure(state=tk.DISABLED)
+                    else:
+                        self.chatlog.configure(state=tk.NORMAL)
+                        self.chatlog.insert(tk.END, "\n[非文本响应]\n")
+                        self.chatlog.configure(state=tk.DISABLED)
+                        print(line)
 
-            # 将响应复制到剪贴板
-            copy(chatGPT_response)
+                    line = next(response, '[DONE]')
 
-        # 创建线程并启动
-        threading.Thread(target=get_response).start()
+                # 将响应复制到剪贴板
+                copy(chatGPT_response)
+
+            # 创建线程并启动
+            threading.Thread(target=get_response).start()
+        except Exception as e:
+            print(e)
+            self.chatlog.configure(state=tk.NORMAL)
+            self.chatlog.insert(tk.END, "\n{}\n".format(e))
+            self.chatlog.configure(state=tk.DISABLED)
+
 
 
 root = tk.Tk()
