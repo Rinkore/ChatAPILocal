@@ -14,7 +14,10 @@ class ChatGUI:
     def __init__(self, master):
         self.master = master
         master.title("Chat with OpenAI")
-
+        for i in range(4):
+            self.master.grid_rowconfigure(i, weight=1)
+        self.master.grid_rowconfigure(4, weight=99)
+        self.master.grid_columnconfigure(0, weight=1)
         # Create API key input box
         self.api_key_frame = tk.Frame(master)
         self.api_key_frame.grid(row=0, column=0, padx=10, pady=10)
@@ -24,7 +27,7 @@ class ChatGUI:
 
         self.api_key_box = tk.Entry(self.api_key_frame, width=50)
         self.api_key_box.grid(row=0, column=1, padx=5)
-        self.api_key_box.insert(tk.END, "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")
+        self.api_key_box.insert(tk.END, "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")
 
         # Create model selection frame
         self.model_selection_frame = tk.Frame(master)
@@ -38,7 +41,8 @@ class ChatGUI:
 
         # Create radio buttons for each model option
         models = [
-            ("gpt-3.5-turbo", "gpt-3.5-turbo")
+            ("gpt-3.5-turbo", "gpt-3.5-turbo"),
+            ("gpt-3.5-turbo-0301", "gpt-3.5-turbo-0301")
         ]
 
         for i, (model, model_name) in enumerate(models):
@@ -51,10 +55,10 @@ class ChatGUI:
         self.temperature_label = tk.Label(self.model_selection_frame, text="Temperature:")
         self.temperature_label.grid(row=1, column=0, padx=5)
 
-        self.temperature_slider = tk.Scale(self.model_selection_frame, from_=0.1, to=2.0, resolution=0.1,
+        self.temperature_slider = tk.Scale(self.model_selection_frame, from_=0, to=2.0, resolution=0.01,
                                            orient=tk.HORIZONTAL,
                                            length=200)
-        self.temperature_slider.grid(row=1, column=1, padx=5)
+        self.temperature_slider.grid(row=1, column=1, padx=5, columnspan=3, sticky="ew")
 
         self.temperature_slider.set('0.2')
         # Create slider for max token value
@@ -64,7 +68,7 @@ class ChatGUI:
         self.max_token_slider = tk.Scale(self.model_selection_frame, from_=32, to=2048, resolution=32,
                                          orient=tk.HORIZONTAL,
                                          length=200)
-        self.max_token_slider.grid(row=2, column=1, padx=5)
+        self.max_token_slider.grid(row=2, column=1, padx=5, columnspan=3, sticky="ew")
         self.max_token_slider.set('1024')
         # Create task input box
         self.input_task_frame = tk.Frame(master)
