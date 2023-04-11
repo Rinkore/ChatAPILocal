@@ -25,10 +25,9 @@ class ChatGUI:
         self.api_key_label = tk.Label(self.api_key_frame, text="OpenAI API Key:")
         self.api_key_label.grid(row=0, column=0, padx=5)
 
-        self.api_key_box = tk.Entry(self.api_key_frame, width=50)
-        self.api_key_box.grid(row=0, column=1, padx=5)
+        self.api_key_box = tk.Entry(self.api_key_frame)
+        self.api_key_box.grid(row=0, column=1, padx=5, columnspan=3, sticky="ew")
         self.api_key_box.insert(tk.END, "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")
-
         # Create model selection frame
         self.model_selection_frame = tk.Frame(master)
         self.model_selection_frame.grid(row=1, column=0, padx=10, pady=10)
@@ -39,18 +38,13 @@ class ChatGUI:
         # Create a variable to store the selected model
         self.selected_model = tk.StringVar()
 
-        # Create radio buttons for each model option
-        models = [
-            ("gpt-3.5-turbo", "gpt-3.5-turbo"),
-            ("gpt-3.5-turbo-0301", "gpt-3.5-turbo-0301")
-        ]
+        # Create dropdown for selecting the model
+        models = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301"]
+        self.model_dropdown = tk.OptionMenu(self.model_selection_frame, self.selected_model, *models)
+        self.model_dropdown.grid(row=0, column=1, padx=5, columnspan=3, sticky="ew")
 
-        for i, (model, model_name) in enumerate(models):
-            button = ttk.Radiobutton(self.model_selection_frame, text=model, variable=self.selected_model,
-                                     value=model_name)
-            button.grid(row=0, column=i + 1, padx=5)
+        self.selected_model.set(models[0])
 
-        self.selected_model.set("gpt-3.5-turbo")
         # Create slider for temperature value
         self.temperature_label = tk.Label(self.model_selection_frame, text="Temperature:")
         self.temperature_label.grid(row=1, column=0, padx=5)
