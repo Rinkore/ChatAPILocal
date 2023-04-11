@@ -1,10 +1,8 @@
 import threading
 import tkinter as tk
-from tkinter import ttk
-
 import openai
+from tkinter import ttk
 from pyperclip import copy
-
 
 class ChatGUI:
 
@@ -57,6 +55,7 @@ class ChatGUI:
                                            orient=tk.HORIZONTAL,
                                            length=200)
         self.temperature_slider.grid(row=1, column=1, padx=5)
+
         self.temperature_slider.set('0.2')
         # Create slider for max token value
         self.max_token_label = tk.Label(self.model_selection_frame, text="Max Token:")
@@ -98,6 +97,8 @@ class ChatGUI:
         self.update_chatlog("Chat with OpenAI")
 
     def send_message(self):
+        self.send_button.configure(text="请求中...")
+        self.send_button.config(state=tk.DISABLED)
         # Get API key and set it
         api_key = self.api_key_box.get()
         openai.api_key = api_key
@@ -129,10 +130,14 @@ class ChatGUI:
                         self.update_chatlog(line.choices[0].delta.content)
                     elif line.choices[0].finish_reason == "stop":
                         self.update_chatlog("\n[结束]\n")
+                        self.send_button.configure(text="发送")
+                        self.send_button.config(state=tk.NORMAL)
                     elif 'role' in line.choices[0].delta:
                         self.update_chatlog("\n[开始]\n")
                     else:
-                        self.update_chatlog("\n[非文本响应]\n")
+                        self.update_chatlog("\n[错误]\n")
+                        self.send_button.configure(text="发送")
+                        self.send_button.config(state=tk.NORMAL)
                         print(line)
 
                     line = next(response, '[DONE]')
@@ -145,6 +150,7 @@ class ChatGUI:
         except Exception as e:
             print(e)
             self.update_chatlog("\n" + str(e) + "\n")
+
 
 
 root = tk.Tk()
