@@ -4,6 +4,7 @@ import openai
 from tkinter import ttk
 from pyperclip import copy
 
+
 class ChatGUI:
 
     def update_chatlog(self, content):
@@ -27,7 +28,7 @@ class ChatGUI:
 
         self.api_key_box = tk.Entry(self.api_key_frame)
         self.api_key_box.grid(row=0, column=1, padx=5, columnspan=3, sticky="ew")
-        self.api_key_box.insert(tk.END, "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")
+        self.api_key_box.insert(tk.END, "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")
         # Create model selection frame
         self.model_selection_frame = tk.Frame(master)
         self.model_selection_frame.grid(row=1, column=0, padx=10, pady=10)
@@ -56,14 +57,14 @@ class ChatGUI:
 
         self.temperature_slider.set('0.2')
         # Create slider for max token value
-        self.max_token_label = tk.Label(self.model_selection_frame, text="Max Token:")
-        self.max_token_label.grid(row=2, column=0, padx=5)
+        self.top_p_label = tk.Label(self.model_selection_frame, text="Top_p:")
+        self.top_p_label.grid(row=2, column=0, padx=5)
 
-        self.max_token_slider = tk.Scale(self.model_selection_frame, from_=32, to=2048, resolution=32,
-                                         orient=tk.HORIZONTAL,
-                                         length=200)
-        self.max_token_slider.grid(row=2, column=1, padx=5, columnspan=3, sticky="ew")
-        self.max_token_slider.set('1024')
+        self.top_p_slider = tk.Scale(self.model_selection_frame, from_=0, to=1, resolution=0.01,
+                                     orient=tk.HORIZONTAL,
+                                     length=200)
+        self.top_p_slider.grid(row=2, column=1, padx=5, columnspan=3, sticky="ew")
+        self.top_p_slider.set('1')
         # Create task input box
         self.input_task_frame = tk.Frame(master)
         self.input_task_frame.grid(row=2, column=0, padx=10, pady=10)
@@ -113,7 +114,7 @@ class ChatGUI:
                     messages=[
                         {'role': 'user', 'content': prompt + message}
                     ],
-                    max_tokens=self.max_token_slider.get(),
+                    top_p=self.top_p_slider.get(),
                     n=1,
                     stop=None,
                     temperature=self.temperature_slider.get(),
@@ -148,7 +149,6 @@ class ChatGUI:
         except Exception as e:
             print(e)
             self.update_chatlog("\n" + str(e) + "\n")
-
 
 
 root = tk.Tk()
