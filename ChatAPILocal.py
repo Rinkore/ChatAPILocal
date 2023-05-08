@@ -28,7 +28,7 @@ class ChatGUI:
 
         self.api_key_box = tk.Entry(self.api_key_frame)
         self.api_key_box.grid(row=0, column=1, padx=5, columnspan=3, sticky="ew")
-        self.api_key_box.insert(tk.END, "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")
+        self.api_key_box.insert(tk.END, "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")
         # Create model selection frame
         self.model_selection_frame = tk.Frame(master)
         self.model_selection_frame.grid(row=1, column=0, padx=10, pady=10)
@@ -69,18 +69,18 @@ class ChatGUI:
         self.input_task_frame = tk.Frame(master)
         self.input_task_frame.grid(row=2, column=0, padx=10, pady=10)
 
-        self.input_task_label = tk.Label(self.input_task_frame, text="当前任务（可选）")
+        self.input_task_label = tk.Label(self.input_task_frame, text="System:")
         self.input_task_label.grid(row=0, column=0, padx=5)
 
         self.input_task_box = tk.Entry(self.input_task_frame, width=50)
         self.input_task_box.grid(row=0, column=1, padx=5)
-        self.input_task_box.insert(tk.END, "请帮我翻译")
+        self.input_task_box.insert(tk.END, "You are a helpful assistant that translates English to Chinese")
 
         # Create message input box
         self.input_frame = tk.Frame(master)
         self.input_frame.grid(row=3, column=0, padx=10, pady=10)
 
-        self.input_label = tk.Label(self.input_frame, text="输入文字（回复会复制到剪切板）")
+        self.input_label = tk.Label(self.input_frame, text="User")
         self.input_label.grid(row=0, column=0, padx=5)
 
         self.input_box = tk.Entry(self.input_frame, width=50)
@@ -106,13 +106,14 @@ class ChatGUI:
         prompt = self.input_task_box.get()
         self.input_box.delete(0, tk.END)
 
-        self.update_chatlog("\nYou:" + prompt + message + "\nChatGPT: ")
+        self.update_chatlog("\nSystem:" + prompt + "\nYou:" + message + "\nChatGPT: ")
 
         try:
             def get_response():
                 response = openai.ChatCompletion.create(
                     messages=[
-                        {'role': 'user', 'content': prompt + message}
+                        {"role": "system", "content": prompt},
+                        {'role': 'user', 'content': message}
                     ],
                     top_p=self.top_p_slider.get(),
                     n=1,
@@ -128,21 +129,22 @@ class ChatGUI:
                         chatGPT_response += line.choices[0].delta.content
                         self.update_chatlog(line.choices[0].delta.content)
                     elif line.choices[0].finish_reason == "stop":
-                        self.update_chatlog("\n[结束]\n")
+                        # 将响应复制到剪贴板
+                        copy(chatGPT_response)
+                        self.update_chatlog("\n[结束]\n[回复已复制到剪切板]\n")
                         self.send_button.configure(text="发送")
                         self.send_button.config(state=tk.NORMAL)
                     elif 'role' in line.choices[0].delta:
                         self.update_chatlog("\n[开始]\n")
                     else:
-                        self.update_chatlog("\n[错误]\n")
+                        # 将响应复制到剪贴板
+                        copy(chatGPT_response)
+                        self.update_chatlog("\n[错误]\n[回复已复制到剪切板]\n")
                         self.send_button.configure(text="发送")
                         self.send_button.config(state=tk.NORMAL)
                         print(line)
 
                     line = next(response, '[DONE]')
-
-                # 将响应复制到剪贴板
-                copy(chatGPT_response)
 
             # 创建线程并启动
             threading.Thread(target=get_response).start()
